@@ -1,9 +1,9 @@
 const express = require('express') //express를 설치했기 때문에 가져올 수 있다.
 const cookieparser = require('cookie-parser');
 const app = express();
-// require("dotenv").config();
+require("dotenv").config();
 
-const port = 5000;
+const port = process.env.PORT;
 
 const vocabulary = [];
 const user = [];
