@@ -8,9 +8,9 @@ const port = process.env.PORT;
 const vocabulary = [];
 const user = [];
 
+app.use(express.urlencoded({extended: true}));
 app.use(express.json());
 app.use(express.static('build'));
-app.use(express.urlencoded());
 app.use(cookieparser());
 app.all('/*', function(req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
@@ -60,12 +60,11 @@ app.route('/login')
   })
   .post((req, res) => {
     const { code, password } = req.body;
-    console.log(req.cookies['user']);
-    console.log(req.cookies);
-
-    if(req.cookies["user"]){
-        res.send(true);
-        return;
+    let userCookie = req.cookies["user"];
+    if(userCookie){
+      //
+      res.send(true);
+      return;
     } 
     if (!code) {
       res.send(false);
