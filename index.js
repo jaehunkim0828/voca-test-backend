@@ -3,7 +3,7 @@ const cookieparser = require('cookie-parser');
 const app = express();
 require("dotenv").config();
 
-const port = process.env.PORT;
+const port = process.env.PORT || 5000;
 
 const vocabulary = [];
 const user = [];
