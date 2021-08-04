@@ -32,7 +32,7 @@ app.route('/voca')
 
     if (!voca) {
       for (let i = 0; i < vocabulary.length; i += 1) {
-        if (vocabulary[i]['user_id'] === user_id) {
+        if (vocabulary[i]['user_id'] === req.cookies['user']) {
           userVoca.push(vocabulary[i]);
         }
       }
