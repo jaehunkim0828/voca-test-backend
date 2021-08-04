@@ -49,6 +49,7 @@ app.route('/voca')
     for (let i = 0; i < vocabulary.length; i += 1) {
       if (vocabulary[i]['voca'] === removeVoca) {
         vocabulary.splice(i, 1);
+        res.send(vocabulary);
       }
     }
   })
