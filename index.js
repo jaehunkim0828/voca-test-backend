@@ -2,6 +2,16 @@ const express = require('express') //express를 설치했기 때문에 가져올
 const cookieparser = require('cookie-parser');
 const app = express();
 require("dotenv").config();
+const knex = require('knex')({
+  client: 'mysql',
+  connection: {
+    host : 'db-voca.cauwnunghr4w.ap-northeast-2.rds.amazonaws.com',
+    user : 'jaehun',
+    port: '3306',
+    password : 'gg008043',
+    database : 'db_voca'
+  }
+});
 
 const port = process.env.PORT || 5000;
 
@@ -15,6 +25,7 @@ app.use(cookieparser());
 app.all('/*', function(req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Headers", "*");
+  res.header("Access-Control-Allow-Methods", "*")
   next();
 });
 
@@ -24,43 +35,70 @@ app.get('/', function(req, res, next) {
 
 app.route('/voca')
   .get((req, res) => {
-    res.send(vocabulary);
+    knex.select('*').from('voca')
+      .then(data => res.send(data));
   })
   .post((req, res) => {
-    const { user_id, voca } =req.body;
-    let userVoca = [];
+    const { voca, engvoca } =req.body;
 
     if (!voca) {
-      for (let i = 0; i < vocabulary.length; i += 1) {
-        if (vocabulary[i]['user_id'] === req.cookies['user']) {
-          userVoca.push(vocabulary[i]);
-        }
-      }
-      res.send(userVoca);
+      knex.select('*')
+        .from('voca')
+        .where({
+          user_id: req.cookies['user']
+        })
+        .then(data => {
+          res.send(data);
+          return;
+        })
       return;
     }
-
-    vocabulary.push(req.body);
-    res.send(req.body);
+    knex.insert({
+      created: new Date(), engvoca, user_id: req.cookies['user'], voca,
+    })
+      .into('voca')
+      .then(data => res.send(data));
   })
   .delete((req, res) => {
-    const removeVoca = req.body.voca;
+    const { userId, voca, engvoca } = req.body;
+    console.log(req.body);
 
-    for (let i = 0; i < vocabulary.length; i += 1) {
-      if (vocabulary[i]['voca'] === removeVoca) {
-        vocabulary.splice(i, 1);
-        res.send(vocabulary);
-      }
-    }
+    knex('voca').del().where({voca, engvoca, user_id: userId})
+      .then(data => {
+        //지우지말기
+        console.log(data);
+        res.send('제거성공')
+      });
   })
 
 app.route('/user')
   .get((_, res) => {
-    res.send(user);
+    knex.select('*').from('user')
+      .then(data => res.send(data))
+      .catch(err => res.send(err))
   })
   .post((req, res) => {
-    user.push(req.body);
-    res.send(req.body);
+    const { code, password } =req.body;
+
+    knex.select('code').from('user')
+      .then(data => {
+        for (let i = 0; i < data.length; i += 1 ) {
+          if (data[i].code === code) {
+            return res.status(409).send('이메일이 존재합니다.');
+          }   
+        }
+        user.push(req.body);
+        return knex.insert({
+          code,
+          password,
+          created: new Date(),
+        })
+          .into('user')
+          .then(data => res.status(201).send(data))
+          .catch((err) => {
+            res.send(err);
+          })
+      })
   })
 
 app.route('/login')
@@ -71,24 +109,28 @@ app.route('/login')
   .post((req, res) => {
     const { code, password } = req.body;
     let userCookie = req.cookies["user"];
+
     if(userCookie){
-      //
+      //쿠키가 있으면 로그인 유지.
       res.send(true);
       return;
     } 
     if (!code) {
+      //로그아웃
       res.send(false);
       return;
     }
-    for (let i = 0; i < user.length; i += 1) {
-      if (user[i]['code'] === code && user[i]['password'] === password) {
-        const token = { userId : i };
-        res.cookie('user', i);
-        res.send(token);
-        return;
-      } 
-    }
-    res.status(404).send('로그인 실패');  
+
+    knex.select('id').from('user').where({ code, password })
+      .then(data => {
+        if (data.length !== 0) {
+          res.cookie('user', data[0].id);
+          res.status(200).send('성공');
+          return;
+        } else {
+          res.status(404).send('로그인 실패') 
+        }
+      }) 
   })
 
 app.listen(port, () => console.log("Listening on", port));
