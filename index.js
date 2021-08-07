@@ -86,7 +86,6 @@ app.route('/user')
             return res.status(409).send('이메일이 존재합니다.');
           }   
         }
-        user.push(req.body);
         return knex.insert({
           code,
           password,
