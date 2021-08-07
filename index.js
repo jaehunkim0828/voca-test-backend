@@ -15,9 +15,6 @@ const knex = require('knex')({
 
 const port = process.env.PORT || 5000;
 
-const vocabulary = [];
-const user = [];
-
 app.use(express.urlencoded({extended: true}));
 app.use(express.json());
 app.use(express.static('build'));
@@ -35,8 +32,7 @@ app.get('/', function(req, res, next) {
 
 app.route('/voca')
   .get((req, res) => {
-    knex.select('*').from('voca')
-      .then(data => res.send(data));
+    res.send('voca');
   })
   .post((req, res) => {
     const { voca, engvoca } =req.body;
@@ -74,7 +70,10 @@ app.route('/voca')
 app.route('/user')
   .get((_, res) => {
     knex.select('*').from('user')
-      .then(data => res.send(data))
+      .then(data => {
+        console.log(data);
+        res.send('user')
+      })
       .catch(err => res.send(err))
   })
   .post((req, res) => {
