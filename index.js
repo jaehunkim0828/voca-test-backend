@@ -5,10 +5,10 @@ require("dotenv").config();
 const knex = require('knex')({
   client: 'mysql',
   connection: {
-    host : 'db-voca.cauwnunghr4w.ap-northeast-2.rds.amazonaws.com',
-    user : 'jaehun',
-    port: '3306',
-    password : 'gg008043',
+    host : process.env.DB_HOST,
+    user : process.env.DB_USER,
+    port: process.env.DB_PORT,
+    password : process.env.DB_PASSWORD,
     database : 'db_voca'
   }
 });
